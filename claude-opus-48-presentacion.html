@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Opus 4.8 — Presentación IA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222222;
+    --orange: #e8632a;
+    --coral: #f07848;
+    --orange-glow: rgba(232, 99, 42, 0.15);
+    --text: #f0f0f0;
+    --muted: #888888;
+    --white: #ffffff;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── SLIDES CONTAINER ─── */
+  #deck {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(40px);
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  .slide.exit-up {
+    opacity: 0;
+    transform: translateY(-40px);
+    pointer-events: none;
+  }
+
+  /* ─── GRID BACKGROUND ─── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  /* ─── SLIDE NUMBER ─── */
+  .slide-num {
+    position: absolute;
+    bottom: 32px;
+    right: 48px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
+  /* ─── NAV ─── */
+  #nav {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+    background: rgba(17,17,17,0.9);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 10px 20px;
+    backdrop-filter: blur(16px);
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    font-size: 16px;
+  }
+
+  .nav-btn:hover {
+    background: var(--orange);
+    border-color: var(--orange);
+    transform: scale(1.05);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s, transform 0.3s;
+    cursor: pointer;
+  }
+
+  .dot.active {
+    background: var(--orange);
+    transform: scale(1.5);
+  }
+
+  /* ─── SLIDE 1 — COVER ─── */
+  #s1 {
+    text-align: center;
+  }
+
+  .logo-wrap {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 40px;
+  }
+
+  /* orbiting dots canvas — sits behind the center icon */
+  #orbit-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .logo-inner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 0 32px rgba(232,99,42,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .logo-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 22px;
+    display: block;
+  }
+
+  .cover-title {
+    font-size: clamp(48px, 7vw, 80px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--white) 30%, var(--coral) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+
+  .cover-sub {
+    font-size: clamp(16px, 2.2vw, 22px);
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    margin-bottom: 40px;
+  }
+
+  .cover-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 1px solid var(--orange);
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ─── CONTENT SLIDES ─── */
+  .content-wrap {
+    width: 100%;
+    max-width: 900px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .slide-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--orange) 0%, transparent 100%);
+    max-width: 80px;
+  }
+
+  .slide-title {
+    font-size: clamp(32px, 4.5vw, 52px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 40px;
+    color: var(--white);
+  }
+
+  .slide-title em {
+    font-style: normal;
+    color: var(--coral);
+  }
+
+  /* ─── CARDS GRID ─── */
+  .cards {
+    display: grid;
+    gap: 16px;
+  }
+
+  .cards.cols-2 { grid-template-columns: 1fr 1fr; }
+  .cards.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .card:hover {
+    border-color: var(--orange);
+    transform: translateY(-2px);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 6px;
+  }
+
+  .card-value {
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+
+  .card-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* ─── BULLETS ─── */
+  .bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .bullets li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-size: clamp(14px, 1.6vw, 17px);
+    line-height: 1.55;
+    color: #c8c8c8;
+  }
+
+  .bullets li .dot-marker {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    flex-shrink: 0;
+    margin-top: 0.55em;
+  }
+
+  .bullets li strong {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  /* ─── BIG STAT ─── */
+  .big-stat {
+    font-size: clamp(56px, 9vw, 100px);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--white), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  /* ─── TAGS ─── */
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .tag {
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface2);
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .tag:hover, .tag.hi {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  /* ─── PRICE TABLE ─── */
+  .price-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .price-card.featured {
+    border-color: var(--orange);
+    background: rgba(232, 99, 42, 0.06);
+  }
+
+  .price-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .price-val {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.03em;
+  }
+
+  .price-val span {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight-box {
+    background: var(--orange-glow);
+    border: 1px solid rgba(232, 99, 42, 0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--coral);
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  .highlight-box strong { color: var(--white); }
+
+  /* ─── SLIDE 4 WORKFLOW ─── */
+  .workflow-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+
+  .workflow-step {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 18px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    position: relative;
+  }
+
+  .workflow-step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--orange);
+    font-size: 18px;
+    z-index: 2;
+  }
+
+  .workflow-step + .workflow-step { margin-left: 36px; }
+
+  .workflow-step .ws-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+  .workflow-step .ws-title { color: var(--white); font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+
+  /* ─── ANIMATION STAGGER ─── */
+  .slide.active .card,
+  .slide.active .bullets li,
+  .slide.active .workflow-step,
+  .slide.active .price-card {
+    animation: fade-in-up 0.5s both;
+  }
+
+  .slide.active .card:nth-child(1),
+  .slide.active .bullets li:nth-child(1),
+  .slide.active .workflow-step:nth-child(1),
+  .slide.active .price-card:nth-child(1) { animation-delay: 0.1s; }
+
+  .slide.active .card:nth-child(2),
+  .slide.active .bullets li:nth-child(2),
+  .slide.active .workflow-step:nth-child(2),
+  .slide.active .price-card:nth-child(2) { animation-delay: 0.2s; }
+
+  .slide.active .card:nth-child(3),
+  .slide.active .bullets li:nth-child(3),
+  .slide.active .workflow-step:nth-child(3),
+  .slide.active .price-card:nth-child(3) { animation-delay: 0.3s; }
+
+  .slide.active .card:nth-child(4),
+  .slide.active .bullets li:nth-child(4),
+  .slide.active .workflow-step:nth-child(4),
+  .slide.active .price-card:nth-child(4) { animation-delay: 0.4s; }
+
+  .slide.active .card:nth-child(5),
+  .slide.active .bullets li:nth-child(5) { animation-delay: 0.5s; }
+
+  .slide.active .card:nth-child(6),
+  .slide.active .bullets li:nth-child(6) { animation-delay: 0.6s; }
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── KEYBOARD HINT ─── */
+  #kb-hint {
+    position: fixed;
+    top: 24px;
+    right: 32px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--muted);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 700px) {
+    .slide { padding: 40px 24px; }
+    .cards.cols-2, .cards.cols-3 { grid-template-columns: 1fr; }
+    .price-grid { grid-template-columns: 1fr; }
+    .workflow-row { flex-direction: column; gap: 12px; }
+    .workflow-step:not(:last-child)::after { display: none; }
+    .workflow-step + .workflow-step { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="kb-hint">
+  <kbd>↑</kbd><kbd>↓</kbd> navegar · <kbd>Esc</kbd> inicio
+</div>
+
+<div id="deck">
+
+  <!-- ══════════════════════════════════ SLIDE 1 ══ -->
+  <section class="slide active" id="s1">
+    <div class="logo-wrap">
+      <!-- Orbiting dots drawn by JS canvas -->
+      <canvas id="orbit-canvas" width="200" height="200"></canvas>
+    </div>
+
+    <h1 class="cover-title">Claude Opus 4.8</h1>
+    <p class="cover-sub">Lo nuevo en IA generativa</p>
+    <span class="cover-date">◈ &nbsp;28 de mayo de 2026</span>
+
+    <div class="slide-num">01 / 05</div>
+  </section>
+
+  <!-- ══════════════════════════════════ SLIDE 2 ══ -->
+  <section class="slide" id="s2">
+    <div class="content-wrap">
+      <p class="slide-label">Introducción</p>
+      <h2 class="slide-title">¿Qué es <em>Opus 4.8</em>?</h2>
+
+      <div class="cards cols-2">
+        <div class="card">
+          <span class="card-icon">🚀</span>
+          <div class="card-label">Lanzamiento</div>
+          <div class="card-value">28 may 2026</div>
+          <div class="card-sub">Solo 41 días después de Opus 4.7 — el ciclo más corto de Anthropic</div>
+        </div>
+        <div class="card">
+          <span class="card-icon">🧠</span>
+          <div class="card-label">Contexto</div>
+          <div class="card-value">1 000 000 tokens</div>
+          <div class="card-sub">Modelo insignia para coding, agentes y razonamiento complejo</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="card">
+          <div class="card-label">Disponible en</div>
+          <div class="tag-row">
+            <span class="tag hi">API Anthropic</span>
+            <span class="tag hi">Claude.ai</span>
+            <span class="tag">Amazon Bedrock</span>
+            <span class="tag">Google Vertex AI</span>
+            <span class="tag">GitHub Copilot</span>
+          </div>
+          <div class="card-sub" style="margin-top:14px;">ID en API: <code style="color:var(--coral);font-size:13px;">claude-opus-4-8</code></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">02 / 05</div>
+  </section>
+
+  <!-- ══════════════════════════════════ SLIDE 3 ══ -->
+  <section class="slide" id="s3">
+    <div class="content-wrap">
+      <p class="slide-label">Mejoras</p>
+      <h2 class="slide-title">¿Qué mejoró respecto a <em>Opus 4.7</em>?</h2>
+
+      <div style="display:grid; grid-template-columns: 1fr 2fr; gap:16px; align-items:start;">
+        <div>
+          <div class="card" style="text-align:center; padding: 28px 20px;">
+            <div class="card-label">SWE-bench Pro</div>
+            <div class="big-stat">69.2%</div>
+            <div class="card-sub" style="margin-top:12px;">Supera GPT-5.5 y Gemini 3.1 Pro en la mayoría de benchmarks</div>
+          </div>
+        </div>
+
+        <ul class="bullets" style="margin-top:4px;">
+          <li>
+            <span class="dot-marker"></span>
+            <span>Opus 4.7 tenía <strong>respuestas contradictorias</strong> y degradación de rendimiento en tareas largas</span>
+          </li>
+          <li>
+            <span class="dot-marker"></span>
+            <span>Opus 4.8 es <strong>4× más honesto</strong>: admite incertidumbre y señala fallas en el código proactivamente</span>
+          </li>
+          <li>
+            <span class="dot-marker"></span>
+            <span>Razonamiento extendido mejorado — mantiene coherencia en conversaciones de <strong>múltiples horas</strong></span>
+          </li>
+          <li>
+            <span class="dot-marker"></span>
+            <span>Mejor manejo de código ambiguo: menos alucinaciones en APIs y dependencias</span>
+          </li>
+          <li>
+            <span class="dot-marker"></span>
+            <span>Alineación reforzada: <strong>más autonomía del usuario</strong>, menos paternalismo</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-num">03 / 05</div>
+  </section>
+
+  <!-- ══════════════════════════════════ SLIDE 4 ══ -->
+  <section class="slide" id="s4">
+    <div class="content-wrap">
+      <p class="slide-label">Nueva función</p>
+      <h2 class="slide-title"><em>Dynamic Workflows</em></h2>
+
+      <div class="workflow-row" style="margin-bottom:20px;">
+        <div class="workflow-step">
+          <span class="ws-icon">📋</span>
+          <div class="ws-title">Tarea enorme</div>
+          <div>Una sola instrucción compleja</div>
+        </div>
+        <div class="workflow-step">
+          <span class="ws-icon">⚡</span>
+          <div class="ws-title">Cientos de subagentes</div>
+          <div>Trabajan en paralelo</div>
+        </div>
+        <div class="workflow-step">
+          <span class="ws-icon">✅</span>
+          <div class="ws-title">Auto-verificación</div>
+          <div>Resultados revisados antes de entregar</div>
+        </div>
+      </div>
+
+      <ul class="bullets">
+        <li>
+          <span class="dot-marker"></span>
+          <span>Disponible en <strong>Claude Code</strong> (research preview) — planes Max, Team y Enterprise</span>
+        </li>
+        <li>
+          <span class="dot-marker"></span>
+          <span>Puede correr <strong>horas o días</strong> y retomar si se interrumpe</span>
+        </li>
+      </ul>
+
+      <div class="highlight-box">
+        <strong>Caso real:</strong> migró <strong>750.000 líneas de código</strong> en 11 días
+        con <strong>99.8% de tests pasados</strong> — sin intervención humana continua.
+      </div>
+    </div>
+    <div class="slide-num">04 / 05</div>
+  </section>
+
+  <!-- ══════════════════════════════════ SLIDE 5 ══ -->
+  <section class="slide" id="s5">
+    <div class="content-wrap">
+      <p class="slide-label">Datos clave</p>
+      <h2 class="slide-title">Precios &amp; <em>capacidades</em></h2>
+
+      <div class="price-grid">
+        <div class="price-card">
+          <div class="price-label">Entrada estándar</div>
+          <div class="price-val">$5 <span>/ M tokens</span></div>
+          <div class="card-sub" style="margin-top:8px;">Mismo precio que Opus 4.7</div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Salida estándar</div>
+          <div class="price-val">$25 <span>/ M tokens</span></div>
+          <div class="card-sub" style="margin-top:8px;">Sin cambios respecto a la versión anterior</div>
+        </div>
+        <div class="price-card featured">
+          <div class="price-label">Fast Mode — entrada</div>
+          <div class="price-val" style="color:var(--coral);">$10 <span>/ M tokens</span></div>
+          <div class="card-sub" style="margin-top:8px;color:var(--coral);opacity:0.8;">3× más barato que en 4.7 · 2.5× más rápido</div>
+        </div>
+        <div class="price-card featured">
+          <div class="price-label">Fast Mode — salida</div>
+          <div class="price-val" style="color:var(--coral);">$50 <span>/ M tokens</span></div>
+          <div class="card-sub" style="margin-top:8px;color:var(--coral);opacity:0.8;">Ideal para pipelines de agentes de alta frecuencia</div>
+        </div>
+      </div>
+
+      <ul class="bullets" style="gap:10px;">
+        <li>
+          <span class="dot-marker"></span>
+          <span>Hasta <strong>1.000 subagentes en paralelo</strong> con Dynamic Workflows</span>
+        </li>
+        <li>
+          <span class="dot-marker"></span>
+          <span>Mejoras de alineación: <strong>menos engaño</strong>, mayor autonomía del usuario</span>
+        </li>
+      </ul>
+    </div>
+    <div class="slide-num">05 / 05</div>
+  </section>
+
+</div><!-- /deck -->
+
+<!-- ─── NAV BAR ─── -->
+<div id="nav">
+  <button class="nav-btn" id="btn-prev" onclick="go(-1)" disabled title="Anterior">&#8593;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="btn-next" onclick="go(1)" title="Siguiente">&#8595;</button>
+</div>
+
+<script>
+  /* ── Slide navigation ── */
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  let cur = 0;
+  let animating = false;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function getDots() { return dotsEl.querySelectorAll('.dot'); }
+
+  function goTo(n) {
+    if (animating || n === cur) return;
+    animating = true;
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('exit-up');
+    const prev = cur;
+    setTimeout(() => slides[prev].classList.remove('exit-up'), 650);
+    cur = n;
+    slides[cur].classList.add('active');
+    getDots().forEach((d, i) => d.classList.toggle('active', i === cur));
+    btnPrev.disabled = cur === 0;
+    btnNext.disabled = cur === slides.length - 1;
+    setTimeout(() => { animating = false; }, 700);
+  }
+
+  function go(d) { goTo(cur + d); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+    if (e.key === 'Escape') goTo(0);
+  });
+
+  let touchX = null;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+    touchX = null;
+  });
+
+  /* ── Orbiting blinking dots (canvas) ── */
+  (function initOrbit() {
+    const canvas = document.getElementById('orbit-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = 200, H = 200, cx = 100, cy = 100;
+
+    const RINGS = [
+      { r: 72, count: 12, speed: 0.003,  dotR: 3.5, baseAlpha: 0.55 },
+      { r: 90, count: 16, speed: -0.002, dotR: 2.5, baseAlpha: 0.35 },
+    ];
+
+    // pre-build dot state
+    const dots = [];
+    RINGS.forEach(ring => {
+      for (let i = 0; i < ring.count; i++) {
+        const phaseOffset = (i / ring.count) * Math.PI * 2;
+        const blinkOffset = Math.random() * Math.PI * 2;
+        const blinkSpeed  = 0.8 + Math.random() * 1.2;
+        dots.push({ ring, phaseOffset, blinkOffset, blinkSpeed, angle: phaseOffset });
+      }
+    });
+
+    let t = 0;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      t += 1;
+
+      dots.forEach(d => {
+        // advance angle
+        d.angle += d.ring.speed;
+
+        const x = cx + Math.cos(d.angle) * d.ring.r;
+        const y = cy + Math.sin(d.angle) * d.ring.r;
+
+        // blink: oscillate between dim and bright
+        const blink = 0.5 + 0.5 * Math.sin(t * d.blinkSpeed * 0.05 + d.blinkOffset);
+        const alpha = d.ring.baseAlpha + blink * (1 - d.ring.baseAlpha);
+
+        ctx.beginPath();
+        ctx.arc(x, y, d.ring.dotR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(232, 99, 42, ${alpha.toFixed(3)})`;
+        ctx.fill();
+
+        // glow
+        ctx.beginPath();
+        ctx.arc(x, y, d.ring.dotR * 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(240, 120, 72, ${(alpha * 0.18).toFixed(3)})`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+</script>
+</body>
+</html>
