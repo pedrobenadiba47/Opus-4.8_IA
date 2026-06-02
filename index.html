@@ -10,15 +10,15 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:        #050808;
-    --surface:   #0c1210;
-    --surface2:  #111a16;
-    --border:    #1a2820;
-    --green:     #2ecc8a;
-    --green2:    #1aab6d;
-    --green-dim: rgba(46,204,138,0.12);
-    --text:      #e8f0ec;
-    --muted:     #5a7a6a;
+    --bg:        #0a0808;
+    --surface:   #120c0c;
+    --surface2:  #1a1111;
+    --border:    #281a1a;
+    --green:     #e8632a;
+    --green2:    #c9521f;
+    --green-dim: rgba(232,99,42,0.12);
+    --text:      #f0ece8;
+    --muted:     #7a6a5a;
     --white:     #ffffff;
     --mono:      'JetBrains Mono', monospace;
   }
@@ -145,7 +145,7 @@
   .bullets li strong { color: var(--white); font-weight: 600; }
 
   .highlight-box {
-    background: var(--green-dim); border: 1px solid rgba(46,204,138,.25);
+    background: var(--green-dim); border: 1px solid rgba(232,99,42,.25);
     border-radius: 10px; padding: 14px 18px;
     font-family: var(--mono); font-size: 13px; color: var(--green); margin-top: 18px; line-height: 1.6;
   }
@@ -190,7 +190,7 @@
   <section class="slide active" id="s1">
     <canvas id="orbit-canvas" width="180" height="180"></canvas>
     <h1 class="cover-title">Claude Opus 4.8</h1>
-    <p class="cover-sub">La nueva frontera en IA generativa</p>
+    <p class="cover-sub">Lo nuevo en IA generativa</p>
     <span class="cover-date">◆ &nbsp;28 de mayo de 2026</span>
     <div class="slide-num">01 / 05</div>
   </section>
@@ -387,11 +387,11 @@
         const alpha = d.ring.base + blink * (1 - d.ring.base);
         ctx.beginPath();
         ctx.arc(x, y, d.ring.dotR * 2.4, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(46,204,138,${(alpha * 0.15).toFixed(3)})`;
+        ctx.fillStyle = `rgba(232,99,42,${(alpha * 0.15).toFixed(3)})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(x, y, d.ring.dotR, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(46,204,138,${alpha.toFixed(3)})`;
+        ctx.fillStyle = `rgba(232,99,42,${alpha.toFixed(3)})`;
         ctx.fill();
       });
       requestAnimationFrame(draw);
